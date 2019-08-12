@@ -3,47 +3,12 @@ import std.stdio;
 //import tanya.memory;
 
 import evael.memory;
-import evael.containers.Array;
+import evael.containers.array;
+import evael.containers.dictionary;
 
 @nogc
 void main()
 {
-	class OhGod
-	{
-		int b;
-		@nogc
-		public this(int b)
-		{
-			this.b = b;
-		}
-
-				@nogc
-		public ~this()
-		{
-		}
-	}
-
-	class Test : OhGod
-	{
-		int a;
-
-		OhGod secondOne;
-		@nogc
-		public this(int a)
-		{
-			super(1336);
-			secondOne = New!OhGod(5666);
-			this.a = a;
-		}
-
-		@nogc
-		public ~this()
-		{
-			//debug writeln("dtor");
-			Delete!OhGod(secondOne);
-		}
-	}
-
 	class Toto
 	{
 		int a;
@@ -53,40 +18,41 @@ void main()
 			this.a = a;
 		}
 
-				@nogc
+		@nogc
 		public ~this()
 		{
 			debug writeln("dtor");
 		}
 	}
 
-	auto a = New!Toto(444);
-	Delete!Toto(a);
-	debug writeln(a is null);
+	auto toto = New!Toto(5);
+	debug writeln(toto.a);
+	debug writeln(defaultAllocator.numAllocate);
+	
+	auto arr = Array!int(50, 1337);
 
-
-	auto tests = Array!Test(500000);
-
-
-	foreach(i; 0..500000)
+	/*foreach(i, v; arr)
 	{
-		tests[i] = New!Test(4444);
+		debug writeln(v);
+	}*/
+
+	debug
+	{	
+		/*auto dict = Dictionary!(int, int)(32);
+		dict.insert(5, 1);
+		writeln(dict.get(5));*/
+		struct Ha
+		{
+			int a;
+			public this(int a)
+			{
+				this.a = a;
+			}
+		}
+
+		auto h = New!Ha(5);
+
+		Delete(h);
+		assert(h is null);
 	}
-
-	debug readln();
-
-		foreach(i; 0..500000)
-	{
-		Delete(tests[i]);
-	}
-
-	debug readln();
-
-
-
-	debug readln();
-
-//debug defaultAllocator.reportStatistics(stdout);
-debug defaultAllocator.reportPerCallStatistics(stdout);
-
 }

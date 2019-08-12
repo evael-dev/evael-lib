@@ -1,23 +1,33 @@
 module evael.memory;
 
-import std.experimental.allocator.mallocator : Mallocator;
+import std.experimental.allocator.mallocator;
 import std.experimental.allocator.building_blocks.stats_collector;
 
-alias DefaultAllocator = StatsCollector!(Mallocator, 
-	Options.bytesAllocated | Options.bytesUsed, // Global stats
-	Options.bytesAllocated | Options.bytesUsed  // Per call stats
-);
+debug
+{
+	alias CustomStatsCollector = StatsCollector!(Mallocator, 
+		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate, // Global stats
+		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate  // Per call stats
+	);
 
-DefaultAllocator defaultAllocator;
+	CustomStatsCollector defaultAllocator;
+}
+else
+{
+	shared Mallocator defaultAllocator;
+}
 
+/**
+ *
+ */
 @nogc
-T New(T, Args...)(Args args)
+auto New(T, Args...)(Args args)
 {
 	import std.conv : emplace;
 
-	auto size = GetSize!T();
-	auto memory = defaultAllocator.allocate(size);
-
+	immutable bytes = GetSize!T();
+	
+	auto memory = defaultAllocator.allocate(bytes);
 	if (memory == null)
 	{
 		import core.exception : onOutOfMemoryError;
@@ -32,9 +42,12 @@ void Delete(T)(ref T instance)
 {
 	auto size = GetSize!T();
 
-	instance.__dtor();
-	defaultAllocator.deallocate((cast(void*) instance)[0..size]);
+	static if (__traits(hasMember, T, "__xdtor"))
+	{
+		instance.__xdtor();
+	}
 
+	defaultAllocator.deallocate((cast(void*) instance)[0..size]);
 	instance = null;
 }
 
@@ -44,13 +57,16 @@ void Delete(T)(T instance)
 	Delete(instance);
 }
 
+/**
+ * Returns size of T.
+ */
 size_t GetSize(T)()
 {
 	static if (is(T == struct)) 
 	{
 		return T.sizeof;
 	}
-	else static if (is(T == class) )
+	else static if (is(T == class))
 	{
 		return __traits(classInstanceSize, T);
 	}
