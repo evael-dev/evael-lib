@@ -21,7 +21,7 @@ else
  *
  */
 @nogc
-auto New(T, Args...)(Args args)
+auto New(T, Args...)(Args args) if (is(T == class))
 {
 	import std.conv : emplace;
 
@@ -57,16 +57,13 @@ void Delete(T)(T instance)
 	Delete(instance);
 }
 
+
 /**
  * Returns size of T.
  */
 size_t GetSize(T)()
 {
-	static if (is(T == struct)) 
-	{
-		return T.sizeof;
-	}
-	else static if (is(T == class))
+	static if (is(T == class))
 	{
 		return __traits(classInstanceSize, T);
 	}

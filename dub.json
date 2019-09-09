@@ -20,5 +20,6 @@
                 "unit-threaded": "*"
             }
         }
-    ]
+	],
+	"dflags": ["-vgc"]
 }

@@ -36,23 +36,27 @@ void main()
 		debug writeln(v);
 	}*/
 
-	debug
-	{	
+
 		/*auto dict = Dictionary!(int, int)(32);
 		dict.insert(5, 1);
 		writeln(dict.get(5));*/
 		struct Ha
 		{
 			int a;
+			@nogc
 			public this(int a)
 			{
 				this.a = a;
 			}
+
+			@nogc
+			public ~this()
+			{
+				debug writeln("god");
+			}
 		}
 
-		auto h = New!Ha(5);
-
-		Delete(h);
-		assert(h is null);
-	}
+		auto h = Ha(5);
+		debug writeln(h.a);
+	
 }
