@@ -2,7 +2,7 @@ module evael.containers.array;
 
 import std.experimental.allocator : makeArray, expandArray, shrinkArray;
 
-import evael.memory;
+public import evael.memory;
 
 struct Array(T)
 {
@@ -12,7 +12,7 @@ struct Array(T)
 	private size_t m_length;
 
 	/**
-	 * Creates an default-initialize array.
+	 * Creates an default-initialized array.
 	 * Params:
 	 * 		capacity : capacity of the arrray
 	 */
@@ -42,6 +42,12 @@ struct Array(T)
 
 	@nogc
 	public ~this()
+	{
+		this.dispose();
+	}
+
+	@nogc
+	public void dispose()
 	{
 		if (this.m_array !is null)
 		{
@@ -168,7 +174,7 @@ struct Array(T)
 	}
 
 	/**
-	 * foreach support.
+	 * @nogc foreach support.
 	 */
 	@nogc
 	public int opApply(scope int delegate(size_t i, ref T) @nogc operation)
@@ -176,6 +182,9 @@ struct Array(T)
 		return opApplyImpl(operation);
 	}
 
+	/**
+	 * foreach support.
+	 */
 	public int opApply(scope int delegate(size_t i, ref T) operation)
 	{
 		return opApplyImpl(operation);
@@ -201,6 +210,11 @@ struct Array(T)
 	@nogc
 	@property nothrow
 	{
+		public T* data()
+		{
+			return this.m_array.ptr;
+		}
+
 		public size_t length()
 		{
 			return this.m_length;
@@ -225,6 +239,11 @@ struct Array(T)
 		public auto ref T back()
 		{
 			return this.m_array[this.m_length - 1];
+		}
+
+		public bool empty()
+		{
+			return this.m_length == 0;
 		}
 	}
 }

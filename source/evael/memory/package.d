@@ -6,8 +6,8 @@ import std.experimental.allocator.building_blocks.stats_collector;
 debug
 {
 	alias CustomStatsCollector = StatsCollector!(Mallocator, 
-		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate, // Global stats
-		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate  // Per call stats
+		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate | Options.numDeallocate, // Global stats
+		Options.bytesAllocated | Options.bytesUsed | Options.numAllocate | Options.numDeallocate  // Per call stats
 	);
 
 	CustomStatsCollector defaultAllocator;
@@ -63,7 +63,11 @@ void Delete(T)(T instance)
  */
 size_t GetSize(T)()
 {
-	static if (is(T == class))
+	static if (is(T == struct)) 
+	{
+		return T.sizeof;
+	}
+	else static if (is(T == class))
 	{
 		return __traits(classInstanceSize, T);
 	}

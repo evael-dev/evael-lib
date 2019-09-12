@@ -40,6 +40,9 @@ void main()
 		/*auto dict = Dictionary!(int, int)(32);
 		dict.insert(5, 1);
 		writeln(dict.get(5));*/
+
+		arr.dispose();
+		debug defaultAllocator.reportStatistics(stdout);
 		struct Ha
 		{
 			int a;
