@@ -9,7 +9,19 @@ import evael.containers.dictionary;
 @nogc
 void main()
 {
-	class Toto
+	alias BoolArray = Array!bool;
+
+	Array!BoolArray test;
+	
+	BoolArray first;
+	first.insert(false);
+	first.insert(true);
+	
+	test.insert(first);
+	debug writeln(test);
+
+
+	/*class Toto
 	{
 		int a;
 		@nogc
@@ -29,7 +41,7 @@ void main()
 	debug writeln(toto.a);
 	debug writeln(defaultAllocator.numAllocate);
 	
-	auto arr = Array!int(50, 1337);
+	auto arr = Array!int(50, 1337);*/
 
 	/*foreach(i, v; arr)
 	{
@@ -41,7 +53,7 @@ void main()
 		dict.insert(5, 1);
 		writeln(dict.get(5));*/
 
-		arr.dispose();
+		/*arr.dispose();
 		debug defaultAllocator.reportStatistics(stdout);
 		struct Ha
 		{
@@ -60,6 +72,6 @@ void main()
 		}
 
 		auto h = Ha(5);
-		debug writeln(h.a);
+		debug writeln(h.a);*/
 	
 }
