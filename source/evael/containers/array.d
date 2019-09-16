@@ -86,7 +86,7 @@ struct Array(T)
 	 *		i : indexs
 	 */
 	@nogc
-	public void remove(in size_t i)
+	public void removeAt(in size_t i)
 	in (i < this.m_length)
 	{
 		static if (is(T == class) || is(T == interface))
@@ -112,7 +112,7 @@ struct Array(T)
 	@nogc
 	public void removeBack()
 	{
-		this.remove(this.m_length - 1);
+		this.removeAt(this.m_length - 1);
 	}
 
 	/**

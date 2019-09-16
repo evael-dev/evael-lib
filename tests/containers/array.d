@@ -66,7 +66,7 @@ unittest
 {
 	auto arr = Array!int();
 	arr.insert(50);
-	arr.remove(0);
+	arr.removeAt(0);
 	
 	arr[0].shouldThrow!Error();
 	arr.length.shouldEqual(0);
@@ -78,7 +78,7 @@ unittest
 {
 	auto arr = Array!int();
 	arr.insert(50);
-	arr.remove(1).shouldThrow!Error();
+	arr.removeAt(1).shouldThrow!Error();
 }
 
 
