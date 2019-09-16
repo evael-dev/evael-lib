@@ -6,10 +6,31 @@ import evael.memory;
 import evael.containers.array;
 import evael.containers.dictionary;
 
+interface I
+{
+	@nogc
+	public void test();
+}
+
+class Oi : I
+{
+	string name;
+
+	@nogc
+	public this(string name)
+	{
+		this.name = name;
+	}
+	@nogc
+	public void test()
+	{
+		debug writeln("hi ", name);
+	}
+}
 @nogc
 void main()
 {
-	alias BoolArray = Array!bool;
+	/*alias BoolArray = Array!bool;
 
 	Array!BoolArray test;
 	
@@ -18,7 +39,14 @@ void main()
 	first.insert(true);
 	
 	test.insert(first);
-	debug writeln(test);
+	debug writeln(test);*/
+
+	Array!I test;
+
+	test.insert(New!Oi("rob"));
+	test.insert(New!Oi("tom"));
+	test[0].test();
+	test[1].test();
 
 
 	/*class Toto

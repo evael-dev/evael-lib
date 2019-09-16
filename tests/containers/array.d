@@ -133,3 +133,13 @@ unittest
 
 	arr[0..5].shouldEqual([1, 1, 1, 1, 1]);
 }
+
+@Name("Array of array")
+unittest
+{
+	auto arr = Array!(Array!bool)();
+
+	arr.insert(Array!bool(3, false));
+
+	arr[0][].shouldEqual([false, false, false]);
+}

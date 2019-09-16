@@ -29,30 +29,13 @@ struct Array(T)
 	 * 		capacity : capacity of the array
 	 *		defaultValue : default value
 	 */
-	import std.string;
-	static if (is(T == class) == false)
+	public this(in size_t capacity, T defaultValue)
 	{
-		static if(T.stringof.startsWith("Array!") == false)
-		{
-			@nogc
-			public this(in size_t capacity, in T defaultValue)
-			{
-				this.m_array = defaultAllocator.makeArray!T(capacity, defaultValue);
-				this.m_capacity = capacity;
-				this.m_length = capacity;
-			}
-		}
-		else
-		{
-			@nogc
-			public this(in size_t capacity)
-			{
-				this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
-				this.m_capacity = capacity;
-				this.m_length = capacity;
-			}		
-		}
-	}
+		this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
+		this.m_array[] = defaultValue;
+		this.m_capacity = capacity;
+		this.m_length = capacity;
+	}		
 
 	@nogc
 	public ~this()
@@ -222,7 +205,7 @@ struct Array(T)
 	}
 
 	@nogc
-	@property nothrow
+	@property
 	{
 		public T* data()
 		{

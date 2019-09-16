@@ -67,7 +67,7 @@ size_t GetSize(T)()
 	{
 		return T.sizeof;
 	}
-	else static if (is(T == class))
+	else static if (is(T == class) || is(T == interface))
 	{
 		return __traits(classInstanceSize, T);
 	}
