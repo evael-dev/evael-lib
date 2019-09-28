@@ -1,9 +1,15 @@
 module tests.memory;
 
 import unit_threaded;
-import evael.memory;
+import evael.lib.memory;
 
-@Name("New returns valid object")
+@Setup
+void setup()
+{
+    defaultAllocator = CustomStatsCollector();
+}
+
+@Name("New returns valid class")
 unittest
 {
     auto foo = New!Foo(1337);
@@ -24,39 +30,41 @@ unittest
 @Name("New allocates bytes")
 unittest 
 {
-    defaultAllocator = CustomStatsCollector();
-
     auto foo = New!Foo(1337);
 
-    defaultAllocator.bytesUsed.shouldEqual(GetSize!Foo());
+    defaultAllocator.bytesUsed.shouldEqual(__traits(classInstanceSize, Foo));
     defaultAllocator.bytesAllocated.shouldEqual(defaultAllocator.bytesUsed);
 }
 
 @Name("Delete deallocates bytes")
 unittest 
 {
-    defaultAllocator = CustomStatsCollector();
-
     auto foo = New!Foo(1337);
     foo.Delete();
 
     defaultAllocator.numAllocate.shouldEqual(1);
     defaultAllocator.bytesUsed.shouldEqual(0);
-    defaultAllocator.bytesAllocated.shouldEqual( GetSize!Foo());
 }
 
-
-@Name("GetSize returns valid value")
+@Name("Delete deallocates bytes when interface is passed as param")
 unittest 
 {
-    // 8 + 8 + int + bool
-    GetSize!Foo().shouldEqual(16 + int.sizeof + bool.sizeof);
+    IFoo foo = New!Foo(1337);
+    foo.Delete();
+
+    defaultAllocator.numAllocate.shouldEqual(1);
+    defaultAllocator.bytesUsed.shouldEqual(0);
 }
 
 /**
  * Fixtures
  */
-class Foo
+interface IFoo
+{
+
+}
+
+class Foo : IFoo
 {
     public int a;
     public bool b;

@@ -1,7 +1,7 @@
 module tests.containers.array;
 
 import unit_threaded;
-import evael.containers.array;
+import evael.lib.containers.array;
 
 @Name("Array is correctly initialized without capacity")
 unittest
@@ -61,7 +61,7 @@ unittest
     arr.capacity.shouldEqual(32);
 }
 
-@Name("Array removes value at index")
+@Name("Array removes value at specific index")
 unittest
 {
     auto arr = Array!int();
@@ -142,4 +142,37 @@ unittest
     arr.insert(Array!bool(3, false));
 
     arr[0][].shouldEqual([false, false, false]);
+}
+
+@Name("Array foreach loop")
+unittest
+{
+    auto arr = Array!int(5, 1);
+
+    int counter;
+
+    foreach (i; arr)
+    {
+        counter++;
+        i.shouldEqual(1);
+    }
+
+    counter.shouldEqual(arr.length);
+}
+
+@Name("Array foreach loop with index")
+unittest
+{
+    auto arr = Array!int(5, 1);
+
+    int counter;
+
+    foreach (index, i; arr)
+    {
+        i.shouldEqual(1);
+        index.shouldEqual(counter);
+        counter++;
+    }
+
+    counter.shouldEqual(arr.length);
 }

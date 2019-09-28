@@ -1,8 +1,8 @@
-module evael.containers.dictionary;
+module evael.lib.containers.dictionary;
 
 import std.experimental.allocator : makeArray, expandArray, shrinkArray;
 
-import evael.memory;
+import evael.lib.memory;
 
 struct KeyValueNode(K, V) 
 {

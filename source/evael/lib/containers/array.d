@@ -1,8 +1,8 @@
-module evael.containers.array;
+module evael.lib.containers.array;
 
 import std.experimental.allocator : makeArray, expandArray, shrinkArray;
 
-public import evael.memory;
+public import evael.lib.memory;
 
 struct Array(T)
 {
@@ -12,7 +12,7 @@ struct Array(T)
     private size_t m_length;
 
     /**
-     * Creates an default-initialized array.
+     * Creates an array.
      * Params:
      * 		capacity : capacity of the arrray
      */
@@ -24,7 +24,7 @@ struct Array(T)
     }
 
     /**
-     * Creates an initialized array.
+     * Creates an array with a specific default value.
      * Params:
      * 		capacity : capacity of the array
      *		defaultValue : default value
@@ -36,12 +36,6 @@ struct Array(T)
         this.m_capacity = capacity;
         this.m_length = capacity;
     }		
-
-    @nogc
-    public ~this()
-    {
-        this.dispose();
-    }
 
     @nogc
     public void dispose()
@@ -176,6 +170,12 @@ struct Array(T)
     @nogc
     public int opApply(scope int delegate(size_t i, ref T) @nogc operation)
     {
+        return opApplyIndexImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(ref T) @nogc operation)
+    {
         return opApplyImpl(operation);
     }
 
@@ -184,16 +184,38 @@ struct Array(T)
      */
     public int opApply(scope int delegate(size_t i, ref T) operation)
     {
+        return opApplyIndexImpl(operation);
+    }
+
+    public int opApply(scope int delegate(ref T) operation)
+    {
         return opApplyImpl(operation);
+    }
+
+    public int opApplyIndexImpl(O)(O operation)
+    {
+        int result;
+
+        foreach (i, ref v; this.m_array[0..this.m_length])
+        {
+            result = operation(i, v);
+
+            if (result)
+            {
+                break;
+            }
+        }
+
+        return result;
     }
 
     public int opApplyImpl(O)(O operation)
     {
         int result;
 
-        foreach (i, ref v; this.m_array)
+        foreach (ref v; this.m_array[0..this.m_length])
         {
-            result = operation(i, v);
+            result = operation(v);
 
             if (result)
             {
