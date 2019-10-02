@@ -21,9 +21,12 @@ debug
 
 	static ~this()
 	{
-		import std.stdio : writeln;
+		import std.stdio : writefln;
 		if (defaultAllocator.bytesUsed != 0)
-			writeln("StatsCollector: Bytes used by allocator != 0, you probably have a memory leak.");
+		{
+			writefln("StatsCollector: There are still %d bytes used, you probably have a memory leak.",
+				defaultAllocator.bytesUsed);
+		}
 	}
 }
 else
@@ -58,8 +61,42 @@ T New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(
 @nogc
 void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == class) || is(T == interface))
 {
-	debug import std.stdio;
+	if (instance is null)
+		return;
 
+    enum isNoGCClass = isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface);
+
+    static if (isNoGCClass)
+    {
+	    bool instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+    }
+
+    auto support = finalize(instance);
+
+    static if(isNoGCClass)
+    {
+        if (instantiatedWithGC == false && support !is null)
+        {
+            defaultAllocator.deallocate(support);
+        }
+    }
+
+	instance = null;
+}
+
+@nogc
+T* New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+{
+	 enum size = T.sizeof;
+
+	 auto memory = defaultAllocator.allocate(size);
+
+	 return emplace!(T, Args)(memory, args);
+}
+
+@nogc
+package void[] finalize(T)(ref T instance)
+{
 	auto obj = cast(Object) instance;
 	auto p = cast(void*) obj;
 
@@ -67,9 +104,7 @@ void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (i
 	auto ppv = cast(void**) p;
 
 	if (!p || !*ppv)
-		return;
-
-	immutable instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+		return null;
 
 	auto pc = cast(ClassInfo*) *ppv;
 
@@ -94,36 +129,20 @@ void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (i
 	// We need to do this before calling deallocate
 	*ppv = null;
 
-	// If it's a NoGCClass or NoGCInterface, we check if it New!(xx) or new xx was used
-	static if (isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface))
-	{
-		if (instantiatedWithGC == false)
-		{
-			defaultAllocator.deallocate(support);
-		}
-	}
-
-	instance = null;
-}
-
-@nogc
-T* New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == struct))
-{
-	 enum size = T.sizeof;
-
-	 auto memory = defaultAllocator.allocate(size);
-
-	 return emplace!(T, Args)(memory, args);
+    return support;
 }
 
 @nogc
 void Delete(T)(ref T* instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
 {
-	static if (__traits(hasMember, T, "__xdtor"))
-	{
-		instance.__xdtor();
-	}
+	destroy(instance);
 
 	defaultAllocator.deallocate((cast(void*) instance)[0..T.sizeof]);
 	instance = null;
+}
+
+@nogc
+void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+{
+	destroy(instance);
 }

@@ -20,7 +20,7 @@ struct Array(T)
     @nogc
     public this(in size_t capacity)
     {
-        this.m_array = defaultAllocator.makeArray!T(capacity);
+        this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
         this.m_capacity = capacity;
     }
 
@@ -31,6 +31,7 @@ struct Array(T)
      * 		capacity : capacity of the array
      *		defaultValue : default value
      */
+    @nogc
     public this(in size_t capacity, T defaultValue)
     {
         this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
@@ -44,17 +45,6 @@ struct Array(T)
     {
         if (this.m_array !is null)
         {
-            static if (is(T == class) || is(T == interface))
-            {
-                foreach (ref element; this)
-                {
-                    if (element !is null)
-                    {
-                        Delete(element);
-                    }
-                }
-            }
-
             defaultAllocator.deallocate(this.m_array);
             this.m_array = null;
         }
@@ -70,7 +60,7 @@ struct Array(T)
     {
         if (this.m_array is null)
         {
-            this.m_array = defaultAllocator.makeArray!T(32);
+            this.m_array = cast(T[])defaultAllocator.allocate(T.sizeof * 32);
             this.m_capacity = 32;
         }
         else if (this.m_length >= this.m_array.length)

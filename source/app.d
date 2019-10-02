@@ -75,12 +75,46 @@ import std.traits;
         iis.insert(new Oi("aaaa"));
 
         iis.dispose();*/
-        I a = New!Oi("aaa");
+     /*   I a = New!Oi("aaa");
         NoGCClass c = cast (NoGCClass) a;
         writeln(c.instantiatedWithGC);
         Delete(a);
       //  assert(a is null);
+        readln();*/
+
+        class Test : NoGCClass
+        {
+            public double[3000] floats = 1337;
+            public int x;
+
+            @nogc
+            public this(int x)
+            {
+                this.x = x;
+            }
+            @nogc
+            public ~this()
+            {
+                debug writeln("disposing...");
+            }
+        } 
+        import core.memory;
+    
+
+        //Test t = Array!Test(5);
+        Test test = new Test(1337);
+        Test b = test;
         readln();
+
+        destroy(test);
+        GC.collect();
+        
+        writeln(b.x);
+        destroy(b);
+        GC.collect();
+
+        readln();
+
     }
  /*   auto a = Array!Oi();
     a.insert(New!Oi("rob"));
