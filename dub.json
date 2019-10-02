@@ -17,6 +17,7 @@
 				"unit-threaded": ">=0.0.0"
 			},
 			"excludedSourceFiles": [ "source/app.d" ],
+			"mainSourceFile": "tests/main.d",
 			"name": "unittest",
 			"sourcePaths": [ "tests" ],
 			"targetType": "executable"

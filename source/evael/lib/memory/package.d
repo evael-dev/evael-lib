@@ -1,68 +1,129 @@
 module evael.lib.memory;
 
 import std.conv : emplace;
-import std.experimental.allocator : make, dispose;
 import std.experimental.allocator.mallocator;
 import std.experimental.allocator.building_blocks.stats_collector;
+import std.traits : isImplicitlyConvertible;
+
+public
+{
+	import evael.lib.memory.no_gc_class;
+}
 
 debug
 {
-    alias CustomStatsCollector = StatsCollector!(Mallocator, 
-        Options.all, // Global stats
-        Options.all  // Per call stats
-    );
+	alias CustomStatsCollector = StatsCollector!(Mallocator, 
+		Options.all, // Global stats
+		Options.all  // Per call stats
+	);
 
-    CustomStatsCollector defaultAllocator;
+	__gshared CustomStatsCollector defaultAllocator;
+
+	static ~this()
+	{
+		import std.stdio : writeln;
+		if (defaultAllocator.bytesUsed != 0)
+			writeln("StatsCollector: Bytes used by allocator != 0, you probably have a memory leak.");
+	}
 }
 else
 {
-    shared Mallocator defaultAllocator;
+	__gshared Mallocator defaultAllocator;
 }
+
+
+/// From druntime. Used for Delete.
+extern (C)
+private void _d_monitordelete(Object h, bool det) @nogc nothrow pure;
 
 @nogc
 T New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == class))
 {
-     enum size = __traits(classInstanceSize, T);
+	static if (!isImplicitlyConvertible!(T, NoGCClass))
+	{
+		static assert(false, "Your class must inerith from NoGCClass if you want to use New.");
+	}
 
-     auto memory = defaultAllocator.allocate(size);
-     (cast(void*) memory)[0..size] = typeid(T).initializer[];
+	enum size = __traits(classInstanceSize, T);
 
-     return emplace!(T, Args)(memory, args);
+	auto memory = defaultAllocator.allocate(size);
+	(cast(void*) memory)[0..size] = typeid(T).initializer[];
+
+	T ret = emplace!(T, Args)(memory, args);
+	ret.instantiatedWithGC = false;
+
+	return ret;
 }
 
 @nogc
 void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == class) || is(T == interface))
 {
-    auto obj = cast(Object) instance;
-    auto support = (cast(void*) obj)[0..typeid(obj).initializer.length];
+	debug import std.stdio;
 
-    static if (__traits(hasMember, T, "__xdtor"))
-    {
-        instance.__xdtor();
-    }
+	auto obj = cast(Object) instance;
+	auto p = cast(void*) obj;
 
-    defaultAllocator.deallocate(support);
-    instance = null;
+	/** rt_finalize part **/
+	auto ppv = cast(void**) p;
+
+	if (!p || !*ppv)
+		return;
+
+	immutable instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+
+	auto pc = cast(ClassInfo*) *ppv;
+
+	auto c = *pc;
+	do
+	{
+		if (c.destructor)
+		{
+			alias DtorType = void function(Object) @nogc;
+			(cast(DtorType) c.destructor)(obj);
+		}
+	}
+	while ((c = c.base) !is null);
+
+	if (ppv[1]) // if monitor is not null
+		_d_monitordelete(obj, true);
+	
+	/** end of rt_finalize **/
+
+	auto support = p[0..typeid(obj).initializer.length];
+
+	// We need to do this before calling deallocate
+	*ppv = null;
+
+	// If it's a NoGCClass or NoGCInterface, we check if it New!(xx) or new xx was used
+	static if (isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface))
+	{
+		if (instantiatedWithGC == false)
+		{
+			defaultAllocator.deallocate(support);
+		}
+	}
+
+	instance = null;
 }
 
 @nogc
 T* New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == struct))
 {
-     enum size = T.sizeof;
+	 enum size = T.sizeof;
 
-     auto memory = defaultAllocator.allocate(size);
+	 auto memory = defaultAllocator.allocate(size);
 
-     return emplace!(T, Args)(memory, args);
+	 return emplace!(T, Args)(memory, args);
 }
 
 @nogc
-void Delete(T)(T* instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+void Delete(T)(ref T* instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
 {
-    static if (__traits(hasMember, T, "__xdtor"))
-    {
-        instance.__xdtor();
-    }
+	static if (__traits(hasMember, T, "__xdtor"))
+	{
+		instance.__xdtor();
+	}
 
-    defaultAllocator.deallocate((cast(void*) instance)[0..T.sizeof]);
-    instance = null;
+	defaultAllocator.deallocate((cast(void*) instance)[0..T.sizeof]);
+	instance = null;
 }

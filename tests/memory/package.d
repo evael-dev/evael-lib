@@ -14,17 +14,26 @@ unittest
 {
     auto foo = New!Foo(1337);
 
-    assert(foo);
+    foo.shouldNotBeNull();
     foo.a.shouldEqual(1337);
 }
 
-@Name("Delete returns null objectt")
+@Name("Delete returns null object on class")
 unittest
 {
     auto foo = New!Foo(1337);
-    foo.Delete();
+    Delete(foo);
 
-    assert(foo is null);
+    foo.shouldBeNull();
+}
+
+@Name("Delete returns null object on interface")
+unittest
+{
+    IFoo foo = New!Foo(1337);
+    Delete(foo);
+
+    foo.shouldBeNull();
 }
 
 @Name("New allocates bytes")
@@ -40,7 +49,7 @@ unittest
 unittest 
 {
     auto foo = New!Foo(1337);
-    foo.Delete();
+    Delete(foo);
 
     defaultAllocator.numAllocate.shouldEqual(1);
     defaultAllocator.bytesUsed.shouldEqual(0);
@@ -50,7 +59,7 @@ unittest
 unittest 
 {
     IFoo foo = New!Foo(1337);
-    foo.Delete();
+    Delete(foo);
 
     defaultAllocator.numAllocate.shouldEqual(1);
     defaultAllocator.bytesUsed.shouldEqual(0);
@@ -59,12 +68,12 @@ unittest
 /**
  * Fixtures
  */
-interface IFoo
+interface IFoo : NoGCInterface
 {
 
 }
 
-class Foo : IFoo
+class Foo : NoGCClass, IFoo
 {
     public int a;
     public bool b;

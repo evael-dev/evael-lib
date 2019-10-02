@@ -4,6 +4,8 @@ int main(string[] args)
 {
     return args.runTests!(
                           "tests.containers.array",
-                          "tests.memory"
+                          "tests.containers.dictionary",
+                          "tests.memory",
+                          "tests.memory.no_gc_class"
                           );
 }

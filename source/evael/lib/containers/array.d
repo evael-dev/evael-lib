@@ -12,6 +12,7 @@ struct Array(T)
     private size_t m_length;
 
     /**
+     * Array constructor.
      * Creates an array.
      * Params:
      * 		capacity : capacity of the arrray
@@ -24,6 +25,7 @@ struct Array(T)
     }
 
     /**
+     * Array constructor.
      * Creates an array with a specific default value.
      * Params:
      * 		capacity : capacity of the array
@@ -42,6 +44,17 @@ struct Array(T)
     {
         if (this.m_array !is null)
         {
+            static if (is(T == class) || is(T == interface))
+            {
+                foreach (ref element; this)
+                {
+                    if (element !is null)
+                    {
+                        Delete(element);
+                    }
+                }
+            }
+
             defaultAllocator.deallocate(this.m_array);
             this.m_array = null;
         }
@@ -125,6 +138,16 @@ struct Array(T)
      */
     pragma(inline, true)
     @nogc
+    public void opIndexAssign(T value)
+    {
+        opSliceAssign(value);
+    }
+
+    /**
+     * Index assignment support.
+     */
+    pragma(inline, true)
+    @nogc
     public void opIndexAssign(T value, size_t i)
     {
         opIndex(i) = value;
@@ -138,6 +161,13 @@ struct Array(T)
     public void opSliceAssign(T value)
     {
         this.m_array[0 .. this.m_length] = value;
+    }
+
+    pragma(inline, true)
+    @nogc
+    public void opSliceAssign(T[] values)
+    {
+        this.m_array[] = values[];
     }
 
     pragma(inline, true)
@@ -229,9 +259,9 @@ struct Array(T)
     @nogc
     @property
     {
-        public T* data()
+        public T[] data()
         {
-            return this.m_array.ptr;
+            return this.m_array;
         }
 
         public size_t length()
