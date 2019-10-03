@@ -5,7 +5,7 @@
     Evael engine library. 
     <br />
     <br />
-    <img src="https://github.com/evael-dev/evael-lib/workflows/CI/badge.svg">
+    <a href="https://github.com/evael-dev/evael-lib/actions"><img src="https://github.com/evael-dev/evael-lib/workflows/CI/badge.svg"></a>
     <img src="https://img.shields.io/codecov/c/github/evael-dev/evael-lib?style=flat&token=536ef502-75cb-4cf3-acc6-4ca756262b09">
     <img src="https://img.shields.io/github/license/evael-dev/evael-lib">
     <br />
