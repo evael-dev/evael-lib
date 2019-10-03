@@ -12,5 +12,5 @@ jobs:
     - uses: mihails-strasuns/setup-dlang@v0
     - name: Run tests for x64
       run: dub test -- -s
-    - name: Run tests for x86
-      run: dub test --arch=x86 -- -s
+    #- name: Run tests for x86
+    #  run: dub test --arch=x86 -- -s
