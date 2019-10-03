@@ -1,38 +1,32 @@
 {
-	"authors": [
-		"Robert Georges"
-	],
-	"configurations": [
-		{
-			"excludedSourceFiles": [
-				"tests/main.d"
-			],
-			"name": "executable",
-			"targetType": "executable"
-		},
-		{
-			"dependencies": {
-				"unit-threaded": ">=0.0.0"
-			},
-			"excludedSourceFiles": [
-				"source/app.d"
-			],
-			"mainSourceFile": "tests/main.d",
-			"name": "unittest",
-			"sourcePaths": [
-				"tests"
-			],
-			"targetType": "executable"
-		}
-	],
-	"copyright": "Copyright 2015-2019, Robert Georges",
-	"dependencies": {
-	},
-	"description": "Libraries collection for the evael game engine.",
-	"dflags": [
-		"-vgc"
-	],
-	"license": "BSL-1.0",
-	"name": "evael-lib",
-	"version": "0.0.1"
+    "name": "evael-lib",
+    "description": "Libraries collection for the evael game engine.",
+    "copyright": "Copyright 2015-2019, Robert Georges",
+    "license": "BSL-1.0",
+    "authors": ["Robert Georges"],
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "excludedSourceFiles": [
+                "tests/main.d"
+            ],
+            "name": "executable",
+            "targetType": "executable"
+        },
+        {
+            "dependencies": {
+                "unit-threaded": ">=0.0.0"
+            },
+            "excludedSourceFiles": [
+                "source/app.d"
+            ],
+            "mainSourceFile": "tests/main.d",
+            "name": "unittest",
+            "sourcePaths": [
+                "tests"
+            ],
+            "targetType": "executable"
+        }
+    ],
+    "dflags": ["-vgc"]
 }
