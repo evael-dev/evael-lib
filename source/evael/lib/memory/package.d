@@ -35,15 +35,15 @@ else
 	__gshared Mallocator defaultAllocator;
 }
 
+/// From druntime. Used by MemoryHelper.dispose(...).
+extern (C)
+private void _d_monitordelete(Object h, bool det) @nogc nothrow pure;
+
 /**
  * Static helper that provides @nogc new and delete.
  */
 static class MemoryHelper
 {
-	/// From druntime. Used by MemoryHelper.dispose(...).
-	extern (C)
-	private void _d_monitordelete(Object h, bool det) @nogc nothrow pure;
-
 	/** 
 	 * @nogc new for classes.
 	 * Only classes that inherit from NoGCClass can be allocated with this function.
