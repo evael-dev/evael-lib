@@ -1,16 +1,19 @@
-name: CI
-
+name: Tests & Code Coverage
 on: [push]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
-    - uses: mihails-strasuns/setup-dlang@v0
+
     - name: Run tests for x64
+      uses: mihails-strasuns/setup-dlang@v0
       run: dub test -- -s
-    #- name: Run tests for x86
-    #  run: dub test --arch=x86 -- -s
+  
+    - name: Upload coverage to Codecov  
+      uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella 
