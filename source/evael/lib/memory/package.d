@@ -1,8 +1,7 @@
 module evael.lib.memory;
 
-import std.conv : emplace;
 import std.experimental.allocator.mallocator;
-import std.experimental.allocator.building_blocks.stats_collector;
+import std.conv : emplace;
 import std.traits : isImplicitlyConvertible;
 
 public
@@ -12,6 +11,8 @@ public
 
 debug
 {
+	import std.experimental.allocator.building_blocks.stats_collector;
+
 	alias CustomStatsCollector = StatsCollector!(Mallocator, 
 		Options.all, // Global stats
 		Options.all  // Per call stats
@@ -52,7 +53,7 @@ static class MemoryHelper
 	{
 		static if (!isImplicitlyConvertible!(T, NoGCClass))
 		{
-			static assert(false, "Your class must inerith from NoGCClass if you want to use New.");
+			static assert(false, "Your class must inerith from NoGCClass if you want to use create.");
 		}
 
 		enum size = __traits(classInstanceSize, T);

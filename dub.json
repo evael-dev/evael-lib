@@ -1,7 +1,10 @@
 {
-	"authors": [
-		"Robert Georges"
-	],
+	"name": "evael-lib",
+	"description": "Libraries collection for the evael game engine.",
+	"copyright": "Copyright 2015-2019, Robert Georges",
+	"license": "BSL-1.0",
+	"authors": ["Robert Georges"],
+	"version": "0.0.1",
 	"configurations": [
 		{
 			"excludedSourceFiles": [
@@ -25,14 +28,5 @@
 			"targetType": "executable"
 		}
 	],
-	"copyright": "Copyright 2015-2019, Robert Georges",
-	"dependencies": {
-	},
-	"description": "Libraries collection for the evael game engine.",
-	"dflags": [
-		"-vgc"
-	],
-	"license": "BSL-1.0",
-	"name": "evael-lib",
-	"version": "0.0.1"
+	"dflags": ["-vgc"]
 }
