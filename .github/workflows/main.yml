@@ -1,4 +1,4 @@
-name: Tests & Code Coverage
+name: Tests
 on: [push]
 jobs:
   build:
@@ -8,11 +8,4 @@ jobs:
     - uses: mihails-strasuns/setup-dlang@v0
 
     - name: Run tests for x64
-      run: dub test -b unittest-cov -- -s
-  
-    - name: Upload coverage to Codecov  
-      uses: codecov/codecov-action@v1.0.2
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
-        flags: unittests
-        name: codecov-umbrella 
+      run: dub test -- -s

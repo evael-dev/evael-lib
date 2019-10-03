@@ -2,9 +2,6 @@
 <p align="center">
   <h2 align="center">evael-lib</h2>
   <p align="center">
-    Evael engine library. 
-    <br />
-    <br />
     <a href="https://github.com/evael-dev/evael-lib/actions">
         <img src="https://github.com/evael-dev/evael-lib/workflows/CI/badge.svg">
     </a>
