@@ -12,7 +12,7 @@ void setup()
 @Name("New correctly sets `instantiatedWithGC = false` on class")
 unittest
 {
-    auto foo = New!Foo(1337);
+    auto foo = MemoryHelper.create!Foo(1337);
 
     foo.instantiatedWithGC.shouldEqual(false);
 }
@@ -28,7 +28,7 @@ unittest
 @Name("New correctly sets `instantiatedWithGC = false` on interface")
 unittest
 {
-    IFoo foo = New!Foo(1337);
+    IFoo foo = MemoryHelper.create!Foo(1337);
     (cast(NoGCClass) foo).instantiatedWithGC.shouldEqual(false);
 }
 
@@ -44,7 +44,7 @@ unittest
 {
     auto foo = new Foo(1337);
     auto foo2 = foo;
-    Delete(foo);
+    MemoryHelper.dispose(foo);
     foo.shouldBeNull();
     foo2.a.shouldEqual(1337);
 }

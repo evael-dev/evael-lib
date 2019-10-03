@@ -88,7 +88,7 @@ struct Array(T)
     {
         static if (is(T == class) || is(T == interface))
         {
-            Delete(this.m_array[i]);
+            MemoryHelper.dispose(this.m_array[i]);
         }
 
         auto next = i + 1;

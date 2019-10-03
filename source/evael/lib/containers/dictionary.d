@@ -49,7 +49,7 @@ struct Dictionary(K, V)
 			{
                 Node* prevNode = currentNode;
                 currentNode = currentNode.next;
-                Delete(prevNode);
+                MemoryHelper.dispose(prevNode);
             }
         }
 
@@ -71,7 +71,7 @@ struct Dictionary(K, V)
 
         if (node is null) 
         {
-            this.m_buckets[hash] = New!Node(key, value, null);
+            this.m_buckets[hash] = MemoryHelper.create!Node(key, value, null);
         } 
         else 
         {
@@ -86,7 +86,7 @@ struct Dictionary(K, V)
                 node = node.next;
             }
             
-			node.next = New!Node(key, value, null);
+			node.next = MemoryHelper.create!Node(key, value, null);
         }
     } 
 
@@ -148,7 +148,7 @@ struct Dictionary(K, V)
 			prevNode.next = currentNode.next;
 		}
 
-		Delete(currentNode);
+		MemoryHelper.dispose(currentNode);
 
         return true;
     }

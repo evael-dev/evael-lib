@@ -53,32 +53,32 @@ void main()
 
     /*Array!I test;
 
-    test.insert(New!Oi("rob"));
-    test.insert(New!Oi("tom"));
+    test.insert(MemoryHelper.create!Oi("rob"));
+    test.insert(MemoryHelper.create!Oi("tom"));
     test[0].test();
     test[1].test();*/
 /*
-    I a = New!Oi("roaaaaaaaaaaaaab");
-    auto b = New!Oi("tom");
+    I a = MemoryHelper.create!Oi("roaaaaaaaaaaaaab");
+    auto b = MemoryHelper.create!Oi("tom");
 
 a.test();
 
-    Delete(a);
-    Delete(b);*/
+    MemoryHelper.dispose(a);
+    MemoryHelper.dispose(b);*/
 
 import std.traits;
 
     debug 
     {
        /* Array!I iis;
-        iis.insert(New!Oi("lol"));
+        iis.insert(MemoryHelper.create!Oi("lol"));
         iis.insert(new Oi("aaaa"));
 
         iis.dispose();*/
-     /*   I a = New!Oi("aaa");
+     /*   I a = MemoryHelper.create!Oi("aaa");
         NoGCClass c = cast (NoGCClass) a;
         writeln(c.instantiatedWithGC);
-        Delete(a);
+        MemoryHelper.dispose(a);
       //  assert(a is null);
         readln();*/
 
@@ -102,22 +102,16 @@ import std.traits;
     
 
         //Test t = Array!Test(5);
-        Test test = new Test(1337);
+        Test test = MemoryHelper.create!Test(1337);
         Test b = test;
+
+        MemoryHelper.dispose(test);
         readln();
 
-        destroy(test);
-        GC.collect();
-        
-        writeln(b.x);
-        destroy(b);
-        GC.collect();
-
-        readln();
 
     }
  /*   auto a = Array!Oi();
-    a.insert(New!Oi("rob"));
+    a.insert(MemoryHelper.create!Oi("rob"));
 
     debug writeln(a.length);
     foreach(i, obj; a)
@@ -141,7 +135,7 @@ import std.traits;
         }
     }
 
-    auto toto = New!Toto(5);
+    auto toto = MemoryHelper.create!Toto(5);
     debug writeln(toto.a);
     debug writeln(defaultAllocator.numAllocate);
     
@@ -187,10 +181,10 @@ import std.traits;
             int[5000000] x;
         }
 
-        auto lol = New!Lol();
+        auto lol = MemoryHelper.create!Lol();
         debug writeln(lol);
         debug readln();
-        Delete(lol);
+        MemoryHelper.dispose(lol);
         debug writeln(lol);
         debug readln();
 */
@@ -221,9 +215,9 @@ writeln(p);*/
             }
         }
 
-        Ha* h = New!Ha(5);
+        Ha* h = MemoryHelper.create!Ha(5);
         debug writeln(h.a);
-        Delete(h);
+        MemoryHelper.dispose(h);
     debug defaultAllocator.reportStatistics(stdout);*/
 /*debug   
 {

@@ -34,115 +34,140 @@ else
 	__gshared Mallocator defaultAllocator;
 }
 
-
-/// From druntime. Used for Delete.
-extern (C)
-private void _d_monitordelete(Object h, bool det) @nogc nothrow pure;
-
-@nogc
-T New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == class))
+/**
+ * Static helper that provides @nogc new and delete.
+ */
+static class MemoryHelper
 {
-	static if (!isImplicitlyConvertible!(T, NoGCClass))
+	/// From druntime. Used by MemoryHelper.dispose(...).
+	extern (C)
+	private void _d_monitordelete(Object h, bool det) @nogc nothrow pure;
+
+	/** 
+	 * @nogc new for classes.
+	 * Only classes that inherit from NoGCClass can be allocated with this function.
+	 */
+	@nogc
+	public static T create(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == class))
 	{
-		static assert(false, "Your class must inerith from NoGCClass if you want to use New.");
-	}
-
-	enum size = __traits(classInstanceSize, T);
-
-	auto memory = defaultAllocator.allocate(size);
-	(cast(void*) memory)[0..size] = typeid(T).initializer[];
-
-	T ret = emplace!(T, Args)(memory, args);
-	ret.instantiatedWithGC = false;
-
-	return ret;
-}
-
-@nogc
-void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == class) || is(T == interface))
-{
-	if (instance is null)
-		return;
-
-    enum isNoGCClass = isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface);
-
-    static if (isNoGCClass)
-    {
-	    bool instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
-    }
-
-    auto support = finalize(instance);
-
-    static if(isNoGCClass)
-    {
-        if (instantiatedWithGC == false && support !is null)
-        {
-            defaultAllocator.deallocate(support);
-        }
-    }
-
-	instance = null;
-}
-
-@nogc
-T* New(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == struct))
-{
-	 enum size = T.sizeof;
-
-	 auto memory = defaultAllocator.allocate(size);
-
-	 return emplace!(T, Args)(memory, args);
-}
-
-@nogc
-package void[] finalize(T)(ref T instance)
-{
-	auto obj = cast(Object) instance;
-	auto p = cast(void*) obj;
-
-	/** rt_finalize part **/
-	auto ppv = cast(void**) p;
-
-	if (!p || !*ppv)
-		return null;
-
-	auto pc = cast(ClassInfo*) *ppv;
-
-	auto c = *pc;
-	do
-	{
-		if (c.destructor)
+		static if (!isImplicitlyConvertible!(T, NoGCClass))
 		{
-			alias DtorType = void function(Object) @nogc;
-			(cast(DtorType) c.destructor)(obj);
+			static assert(false, "Your class must inerith from NoGCClass if you want to use New.");
 		}
+
+		enum size = __traits(classInstanceSize, T);
+
+		auto memory = defaultAllocator.allocate(size);
+		(cast(void*) memory)[0..size] = typeid(T).initializer[];
+
+		T ret = emplace!(T, Args)(memory, args);
+		ret.instantiatedWithGC = false;
+
+		return ret;
 	}
-	while ((c = c.base) !is null);
 
-	if (ppv[1]) // if monitor is not null
-		_d_monitordelete(obj, true);
-	
-	/** end of rt_finalize **/
+	/** 
+	 * @nogc delete for classes and interfaces.
+	 *
+	 * - If this function is called on classes that inherit from NoGCClass / NoGCInterface (and are instantiated with @nogc new),
+	 * 	 this functon will free memory and call object's destructor.
+	 *
+	 * - If it is called on classes allocated with GC, only the destructor will be called.
+	 */
+	@nogc
+	public static void dispose(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == class) || is(T == interface))
+	{
+		if (instance is null)
+			return;
 
-	auto support = p[0..typeid(obj).initializer.length];
+		enum isNoGCClass = isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface);
 
-	// We need to do this before calling deallocate
-	*ppv = null;
+		static if (isNoGCClass)
+		{
+			bool instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+		}
 
-    return support;
-}
+		auto support = MemoryHelper.finalize(instance);
 
-@nogc
-void Delete(T)(ref T* instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
-{
-	destroy(instance);
+		static if(isNoGCClass)
+		{
+			if (instantiatedWithGC == false && support !is null)
+			{
+				defaultAllocator.deallocate(support);
+			}
+		}
 
-	defaultAllocator.deallocate((cast(void*) instance)[0..T.sizeof]);
-	instance = null;
-}
+		instance = null;
+	}
 
-@nogc
-void Delete(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
-{
-	destroy(instance);
+	/**
+	 * Calls the destructor of an object. 
+	 * This code has been taken from the druntime repository.
+	 */
+	@nogc
+	private static void[] finalize(T)(ref T instance)
+	{
+		auto obj = cast(Object) instance;
+		auto p = cast(void*) obj;
+		auto ppv = cast(void**) p;
+
+		if (!p || !*ppv)
+			return null;
+
+		auto pc = cast(ClassInfo*) *ppv;
+		auto c = *pc;
+
+		do
+		{
+			if (c.destructor)
+			{
+				alias DtorType = void function(Object) @nogc;
+				(cast(DtorType) c.destructor)(obj);
+			}
+		}
+		while ((c = c.base) !is null);
+
+		if (ppv[1]) // if monitor is not null
+			_d_monitordelete(obj, true);
+		
+		auto support = p[0..typeid(obj).initializer.length];
+
+		*ppv = null;
+
+		return support;
+	}
+
+	/**
+	 * @nogc new for structs.
+	 */
+	@nogc
+	public static T* create(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+	{
+		enum size = T.sizeof;
+
+		auto memory = defaultAllocator.allocate(size);
+
+		return emplace!(T, Args)(memory, args);
+	}
+
+	/**
+	 * @nogc delete for structs.
+	 */
+	@nogc
+	public static void dispose(T)(ref T* instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+	{
+		destroy(instance);
+
+		defaultAllocator.deallocate((cast(void*) instance)[0..T.sizeof]);
+		instance = null;
+	}
+
+	/**
+	 * @nogc delete for structs that have not been allocated with @nogc new.
+	 */
+	@nogc
+	public static void dispose(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == struct))
+	{
+		destroy(instance);
+	}
 }

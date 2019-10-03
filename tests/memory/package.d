@@ -12,7 +12,7 @@ void setup()
 @Name("New returns valid class")
 unittest
 {
-    auto foo = New!Foo(1337);
+    auto foo = MemoryHelper.create!Foo(1337);
 
     foo.shouldNotBeNull();
     foo.a.shouldEqual(1337);
@@ -21,8 +21,8 @@ unittest
 @Name("Delete returns null object on class")
 unittest
 {
-    auto foo = New!Foo(1337);
-    Delete(foo);
+    auto foo = MemoryHelper.create!Foo(1337);
+    MemoryHelper.dispose(foo);
 
     foo.shouldBeNull();
 }
@@ -30,8 +30,8 @@ unittest
 @Name("Delete returns null object on interface")
 unittest
 {
-    IFoo foo = New!Foo(1337);
-    Delete(foo);
+    IFoo foo = MemoryHelper.create!Foo(1337);
+    MemoryHelper.dispose(foo);
 
     foo.shouldBeNull();
 }
@@ -39,7 +39,7 @@ unittest
 @Name("New allocates bytes")
 unittest 
 {
-    auto foo = New!Foo(1337);
+    auto foo = MemoryHelper.create!Foo(1337);
 
     defaultAllocator.bytesUsed.shouldEqual(__traits(classInstanceSize, Foo));
     defaultAllocator.bytesAllocated.shouldEqual(defaultAllocator.bytesUsed);
@@ -48,8 +48,8 @@ unittest
 @Name("Delete deallocates bytes")
 unittest 
 {
-    auto foo = New!Foo(1337);
-    Delete(foo);
+    auto foo = MemoryHelper.create!Foo(1337);
+    MemoryHelper.dispose(foo);
 
     defaultAllocator.numAllocate.shouldEqual(1);
     defaultAllocator.bytesUsed.shouldEqual(0);
@@ -58,8 +58,8 @@ unittest
 @Name("Delete deallocates bytes when interface is passed as param")
 unittest 
 {
-    IFoo foo = New!Foo(1337);
-    Delete(foo);
+    IFoo foo = MemoryHelper.create!Foo(1337);
+    MemoryHelper.dispose(foo);
 
     defaultAllocator.numAllocate.shouldEqual(1);
     defaultAllocator.bytesUsed.shouldEqual(0);
