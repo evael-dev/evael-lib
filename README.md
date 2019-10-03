@@ -3,7 +3,7 @@
   <h2 align="center">evael-lib</h2>
   <p align="center">
     <a href="https://github.com/evael-dev/evael-lib/actions">
-        <img src="https://github.com/evael-dev/evael-lib/workflows/tests/badge.svg">
+        <img src="https://github.com/evael-dev/evael-lib/workflows/Tests/badge.svg">
     </a>
     <a href="https://codecov.io/gh/evael-dev/evael-lib">
         <img src="https://codecov.io/gh/evael-dev/evael-lib/branch/master/graph/badge.svg" />
