@@ -1,5 +1,8 @@
 name: Coverage
-on: [merge]
+on:
+  push:
+    branches:
+    - master
 jobs:
   build:
     runs-on: ubuntu-latest
