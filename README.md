@@ -15,7 +15,7 @@
 
 - - -
 
-Evael library contains many useful helpers used by the Evael engine and related projects. It aims to be fully @nogc and extremely simple to use.
+evael-lib contains many useful helpers used by the Evael engine and related projects. It aims to be fully @nogc and extremely simple to use.
 
 ### Features
 
