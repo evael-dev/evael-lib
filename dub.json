@@ -5,6 +5,9 @@
     "license": "BSL-1.0",
     "authors": ["Robert Georges"],
     "version": "0.0.1",
+    "dependencies": {
+		"bindbc-freeimage": "~>0.3.2"
+    },
     "configurations": [
         {
             "excludedSourceFiles": [
@@ -28,5 +31,7 @@
             "targetType": "executable"
         }
     ],
-    "dflags": ["-vgc"]
+    "versions": [
+        "FI_318"
+    ]
 }

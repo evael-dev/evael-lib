@@ -4,6 +4,9 @@ import std.experimental.allocator : makeArray, expandArray, shrinkArray;
 
 public import evael.lib.memory;
 
+/**
+ * Simple dynamic array.
+ */
 struct Array(T)
 {
     private T[] m_array;
@@ -15,13 +18,28 @@ struct Array(T)
      * Array constructor.
      * Creates an array.
      * Params:
-     * 		capacity : capacity of the arrray
+     * 		capacity : capacity of the array
      */
     @nogc
     public this(in size_t capacity)
     {
         this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
         this.m_capacity = capacity;
+    }
+
+    /**
+     * Array constructor.
+     * Creates an array and fills it with data.
+     * Params:
+     * 		capacity : capacity of the array
+     */
+    @nogc
+    public this(T[] data)
+    {
+        this.m_capacity = data.length;
+        this.m_length = data.length;
+        this.m_array = cast(T[]) defaultAllocator.allocate(T.sizeof * capacity);
+        this.m_array[] = data[];
     }
 
     /**
@@ -185,7 +203,7 @@ struct Array(T)
     }
 
     /**
-     * @nogc foreach support.
+     * @nogc foreach(i, j) support.
      */
     @nogc
     public int opApply(scope int delegate(size_t i, ref T) @nogc operation)
@@ -194,7 +212,46 @@ struct Array(T)
     }
 
     @nogc
+    public int opApply(scope int delegate(size_t i, ref T) @nogc nothrow operation) nothrow
+    {
+        return opApplyIndexImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(size_t i, ref const(T)) @nogc operation) const
+    {
+        return opApplyIndexImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(size_t i, ref const(T)) @nogc nothrow operation) const nothrow
+    {
+        return opApplyIndexImpl(operation);
+    }
+
+    /**
+     * @nogc foreach(i) support.
+     */
+    @nogc
     public int opApply(scope int delegate(ref T) @nogc operation)
+    {
+        return opApplyImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(ref T) @nogc nothrow operation) nothrow
+    {
+        return opApplyImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(ref const(T)) @nogc operation) const
+    {
+        return opApplyImpl(operation);
+    }
+
+    @nogc
+    public int opApply(scope int delegate(ref const(T)) @nogc nothrow operation) const nothrow
     {
         return opApplyImpl(operation);
     }
@@ -230,6 +287,40 @@ struct Array(T)
     }
 
     public int opApplyImpl(O)(O operation)
+    {
+        int result;
+
+        foreach (ref v; this.m_array[0..this.m_length])
+        {
+            result = operation(v);
+
+            if (result)
+            {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public int opApplyIndexImpl(O)(O operation) const
+    {
+        int result;
+
+        foreach (i, ref v; this.m_array[0..this.m_length])
+        {
+            result = operation(i, v);
+
+            if (result)
+            {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public int opApplyImpl(O)(O operation) const
     {
         int result;
 
