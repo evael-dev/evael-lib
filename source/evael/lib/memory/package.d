@@ -7,6 +7,7 @@ import std.traits : isImplicitlyConvertible;
 public
 {
     import evael.lib.memory.no_gc_class;
+    import evael.lib.memory.no_gc_exception;
 }
 
 debug
@@ -49,11 +50,12 @@ static class MemoryHelper
      * Only classes that inherit from NoGCClass can be allocated with this function.
      */
     @nogc
-    public static T create(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) if (is(T == class))
+    public static T create(T, Args...)(Args args, string file = __FILE__, int line =__LINE__) 
+        if (is(T == class))
     {
-        static if (!isImplicitlyConvertible!(T, NoGCClass))
+        static if (!isImplicitlyConvertible!(T, NoGCClass) && !isImplicitlyConvertible!(T, NoGCException))
         {
-            static assert(false, "Your class must inerith from NoGCClass if you want to use create.");
+            static assert(false, "Your class must inerith from NoGCClass / NoGCException if you want to use create.");
         }
 
         enum size = __traits(classInstanceSize, T);
@@ -76,21 +78,28 @@ static class MemoryHelper
      * - If it is called on classes allocated with GC, only the destructor will be called.
      */
     @nogc
-    public static void dispose(T)(ref T instance, string file = __FILE__, int line =__LINE__) if (is(T == class) || is(T == interface))
+    public static void dispose(T)(ref T instance, string file = __FILE__, int line =__LINE__) 
+        if (is(T == class) || is(T == interface))
     {
         if (instance is null)
             return;
 
-        enum isNoGCClass = isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface);
+        enum isNoGCObject = isImplicitlyConvertible!(T, NoGCClass) 
+            || isImplicitlyConvertible!(T, NoGCInterface) 
+            || isImplicitlyConvertible!(T, NoGCException);
 
-        static if (isNoGCClass)
+        static if (isNoGCObject)
         {
-            bool instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+            static if (isImplicitlyConvertible!(T, NoGCClass) || isImplicitlyConvertible!(T, NoGCInterface) )
+            {
+                bool instantiatedWithGC = (cast(NoGCClass) instance).instantiatedWithGC;
+            }
+            else bool instantiatedWithGC = (cast(NoGCException) instance).instantiatedWithGC;
         }
 
         auto support = MemoryHelper.finalize(instance);
 
-        static if(isNoGCClass)
+        static if(isNoGCObject)
         {
             if (instantiatedWithGC == false && support !is null)
             {

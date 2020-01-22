@@ -31,7 +31,7 @@ struct Array(T)
      * Array constructor.
      * Creates an array and fills it with data.
      * Params:
-     * 		capacity : capacity of the array
+     * 		data : data that will be inserted
      */
     @nogc
     public this(T[] data)
@@ -98,7 +98,7 @@ struct Array(T)
     /**
      * Removes the item at the given index from the array.
      * Params:
-     *		i : indexs
+     *		i : index
      */
     @nogc
     public void removeAt(in size_t i)
@@ -183,6 +183,13 @@ struct Array(T)
     public void opSliceAssign(T value, size_t i, size_t j)
     {
         this.m_array[i .. j] = value;
+    }
+
+    pragma(inline, true)
+    @nogc
+    public void opSliceAssign(T[] values, size_t i, size_t j)
+    {
+        this.m_array[i .. j] = values;
     }
 
     /**

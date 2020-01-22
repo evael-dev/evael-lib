@@ -1,5 +1,8 @@
 import evael.lib.containers;
 
+import std.stdio;
+    import evael.lib.string;
+
 class Test
 {
 
@@ -17,10 +20,28 @@ class Test
 }
 
 
+@nogc
+void cfunc(const(char*) str)
+{
+    debug writeln(str[0..5]);
+}
 
+@nogc
+void dfunc(in string str)
+{
+    debug writeln(Cstring(str)[0..5]);
+}
+
+
+@nogc
 void main()
 {
 
-    Test test = new Test();
-    test.apply();
+    string hello = "hello";
+
+    debug cfunc(Cstring(hello));
+    debug dfunc(hello);
+
+    //debug .dispose();
+
 }
